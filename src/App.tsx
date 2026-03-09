@@ -1,8 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  AreaChart, Area, LineChart, Line, PieChart, Pie, Cell, Legend
-} from "recharts";
 
 
 /* ═══ DATA ═══ */
@@ -287,6 +283,150 @@ const BarSVG = ({ data, labels=[], color="#f43f5e", h=72 }) => {
   );
 };
 
+
+/* ── Pure SVG Charts (no external lib, no sizing issues) ── */
+
+const SvgBar = ({ data=[], labels=[], color="#8b5cf6", h=180, showValues=false }) => {
+  const mx = Math.max(...data) * 1.1 || 1;
+  const W = 100, pad = 6, barW = (W - pad*2) / data.length - 1.5;
+  const barH = h - 28;
+  return (
+    <svg width="100%" height={h} viewBox={`0 0 ${W} ${h}`} preserveAspectRatio="none" style={{display:"block"}}>
+      <line x1={pad} y1={0} x2={pad} y2={barH} stroke="rgba(255,255,255,0.05)" strokeWidth="0.3"/>
+      {[0,0.25,0.5,0.75,1].map(t=>(
+        <line key={t} x1={pad} y1={barH*t} x2={W-pad} y2={barH*t} stroke="rgba(255,255,255,0.04)" strokeWidth="0.3"/>
+      ))}
+      {data.map((v,i) => {
+        const bh = (v/mx)*barH;
+        const x = pad + i*((W - pad*2)/data.length) + 0.5;
+        return (
+          <g key={i}>
+            <rect x={x} y={barH-bh} width={barW} height={bh} rx="1.2"
+              fill={color} fillOpacity={0.5 + (v/mx)*0.5}/>
+            {labels[i] && <text x={x+barW/2} y={h-4} textAnchor="middle" fontSize="3.2" fill="#475569">{labels[i]}</text>}
+            {showValues && <text x={x+barW/2} y={barH-bh-2} textAnchor="middle" fontSize="3" fill="#94a3b8">{v}</text>}
+          </g>
+        );
+      })}
+    </svg>
+  );
+};
+
+const SvgGroupBar = ({ data=[], keys=[], colors=[], h=180 }) => {
+  const allVals = data.flatMap(d => keys.map(k => d[k] || 0));
+  const mx = Math.max(...allVals) * 1.1 || 1;
+  const W = 100, pad = 6, groupW = (W - pad*2) / data.length;
+  const barW = (groupW - 2) / keys.length - 0.5;
+  const barH = h - 28;
+  return (
+    <svg width="100%" height={h} viewBox={`0 0 ${W} ${h}`} preserveAspectRatio="none" style={{display:"block"}}>
+      {[0,0.25,0.5,0.75,1].map(t=>(
+        <line key={t} x1={pad} y1={barH*t} x2={W-pad} y2={barH*t} stroke="rgba(255,255,255,0.04)" strokeWidth="0.3"/>
+      ))}
+      {data.map((d,i) => {
+        const gx = pad + i*groupW;
+        return (
+          <g key={i}>
+            {keys.map((k,j) => {
+              const v = d[k] || 0;
+              const bh = (v/mx)*barH;
+              const x = gx + j*(barW+0.5) + 0.5;
+              return <rect key={k} x={x} y={barH-bh} width={barW} height={bh} rx="1" fill={colors[j]} fillOpacity={0.8}/>;
+            })}
+            {d.month && <text x={gx+groupW/2} y={h-4} textAnchor="middle" fontSize="3.2" fill="#475569">{d.month}</text>}
+          </g>
+        );
+      })}
+      <g>
+        {keys.map((k,j)=>(
+          <g key={k} transform={`translate(${pad + j*14}, ${h-10})`}>
+            <circle cx="2" cy="2" r="1.5" fill={colors[j]}/>
+            <text x="5" y="4" fontSize="3" fill="#64748b">{k}</text>
+          </g>
+        ))}
+      </g>
+    </svg>
+  );
+};
+
+const SvgArea = ({ data=[], dataKeys=[], colors=[], labels=[], h=220, yFmt=(v)=>v }) => {
+  const allVals = data.flatMap(d => dataKeys.map(k => d[k] || 0));
+  const mx = Math.max(...allVals) * 1.1 || 1;
+  const W = 100, pad = 8, barH = h - 32;
+  const pts = (key) => data.map((d,i) => [pad + (i/(data.length-1))*(W-pad*2), barH - (d[key]/mx)*barH]);
+  const line = (ps) => ps.map((p,i) => `${i===0?"M":"L"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
+  const area = (ps) => `${line(ps)} L${(W-pad).toFixed(1)},${barH} L${pad},${barH} Z`;
+  return (
+    <svg width="100%" height={h} viewBox={`0 0 ${W} ${h}`} preserveAspectRatio="none" style={{display:"block"}}>
+      <defs>
+        {dataKeys.map((k,j)=>(
+          <linearGradient key={k} id={`svgAreaGrad${k}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%"  stopColor={colors[j]} stopOpacity="0.3"/>
+            <stop offset="95%" stopColor={colors[j]} stopOpacity="0"/>
+          </linearGradient>
+        ))}
+      </defs>
+      {[0,0.25,0.5,0.75,1].map(t=>(
+        <line key={t} x1={pad} y1={barH*t} x2={W-pad} y2={barH*t} stroke="rgba(255,255,255,0.04)" strokeWidth="0.3"/>
+      ))}
+      {dataKeys.map((k,j) => {
+        const ps = pts(k);
+        return (
+          <g key={k}>
+            <path d={area(ps)} fill={`url(#svgAreaGrad${k})`}/>
+            <path d={line(ps)} stroke={colors[j]} strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+            {ps.map((p,i)=><circle key={i} cx={p[0]} cy={p[1]} r="1.2" fill={colors[j]}/>)}
+          </g>
+        );
+      })}
+      {labels.map((l,i)=>(
+        <text key={i} x={pad + (i/(labels.length-1))*(W-pad*2)} y={h-16} textAnchor="middle" fontSize="3.2" fill="#475569">{l}</text>
+      ))}
+      <g>
+        {dataKeys.map((k,j)=>(
+          <g key={k} transform={`translate(${pad + j*16}, ${h-6})`}>
+            <circle cx="2" cy="0" r="1.5" fill={colors[j]}/>
+            <text x="5" y="2" fontSize="3" fill="#64748b">{k}</text>
+          </g>
+        ))}
+      </g>
+    </svg>
+  );
+};
+
+const SvgPie = ({ data=[], colors=[], h=200 }) => {
+  const total = data.reduce((s,d)=>s+(d.value||0),0) || 1;
+  const cx=50, cy=46, r=32, ri=20;
+  let angle = -Math.PI/2;
+  const slices = data.map((d,i)=>{
+    const sweep = (d.value/total)*Math.PI*2;
+    const x1=cx+r*Math.cos(angle), y1=cy+r*Math.sin(angle);
+    angle += sweep;
+    const x2=cx+r*Math.cos(angle), y2=cy+r*Math.sin(angle);
+    const xi1=cx+ri*Math.cos(angle-sweep), yi1=cy+ri*Math.sin(angle-sweep);
+    const xi2=cx+ri*Math.cos(angle), yi2=cy+ri*Math.sin(angle);
+    const large = sweep > Math.PI ? 1 : 0;
+    return { d:`M${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r},0,${large},1,${x2.toFixed(2)},${y2.toFixed(2)} L${xi2.toFixed(2)},${yi2.toFixed(2)} A${ri},${ri},0,${large},0,${xi1.toFixed(2)},${yi1.toFixed(2)} Z`, color:colors[i], ...d };
+  });
+  return (
+    <svg width="100%" height={h} viewBox={`0 0 100 ${h}`} style={{display:"block"}}>
+      {slices.map((s,i)=><path key={i} d={s.d} fill={s.color} fillOpacity="0.9" stroke="#13111f" strokeWidth="0.8"/>)}
+      <text x={cx} y={cy+1} textAnchor="middle" fontSize="5" fontWeight="bold" fill="#e2e8f0">{total}</text>
+      <text x={cx} y={cy+6} textAnchor="middle" fontSize="3" fill="#64748b">total</text>
+      {data.map((d,i)=>(
+        <g key={i} transform={`translate(4, ${h-22+i*7})`}>
+          <rect x="0" y="0" width="4" height="4" rx="1" fill={colors[i]}/>
+          <text x="6" y="3.5" fontSize="3.2" fill="#94a3b8">{d.name} <tspan fill="#64748b">({d.value})</tspan></text>
+        </g>
+      ))}
+    </svg>
+  );
+};
+
+const SvgCpuHistory = ({ data=[], color="#10b981", h=160 }) => {
+  return <Spark data={data} color={color} fill h={h} w={500}/>;
+};
+
 const Toast = ({ toasts }) => (
   <div className="fixed bottom-5 right-5 z-[999] flex flex-col gap-2 pointer-events-none">
     {toasts.map(t=>(
@@ -532,16 +672,8 @@ const AdminOverview = ({ setPage, alerts }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Build volume chart */}
         <C><CH title="Build Volume — 24h"/>
-          <div style={{width:"100%",height:180}}>
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-              <BarChart data={buildsByHour.map((v,i)=>({h:["0h","2h","4h","6h","8h","10h","12h","14h","16h","18h","20h","22h","23h","Now"][i],builds:v}))} barSize={14} margin={{top:4,right:4,left:-28,bottom:0}}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
-                <XAxis dataKey="h" tick={{fill:"#475569",fontSize:10}} axisLine={false} tickLine={false}/>
-                <YAxis tick={{fill:"#475569",fontSize:10}} axisLine={false} tickLine={false}/>
-                <Tooltip contentStyle={{background:"#1a1728",border:"1px solid rgba(255,255,255,0.08)",borderRadius:10,fontSize:11,color:"#e2e8f0"}} cursor={{fill:"rgba(139,92,246,0.08)"}} labelStyle={{color:"#94a3b8"}}/>
-                <Bar dataKey="builds" fill="#8b5cf6" radius={[4,4,0,0]} name="Builds"/>
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="px-4 pb-3">
+            <SvgBar data={buildsByHour} labels={["0h","2h","4h","6h","8h","10h","12h","14h","16h","18h","20h","22h","23h","Now"]} color="#8b5cf6" h={180}/>
           </div>
         </C>
 
@@ -590,28 +722,14 @@ const AdminOverview = ({ setPage, alerts }) => {
 
       {/* Revenue trend */}
       <C><CH title="Revenue Trend — MRR vs Profit" sub="Last 7 months"/>
-        <div style={{width:"100%",height:220}}>
-          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-            <AreaChart data={REVENUE.map(r=>({...r,month:r.m}))} margin={{top:16,right:8,left:-20,bottom:0}}>
-              <defs>
-                <linearGradient id="gradMrr" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#8b5cf6" stopOpacity={0.35}/>
-                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="gradProfit" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#10b981" stopOpacity={0.35}/>
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
-              <XAxis dataKey="month" tick={{fill:"#475569",fontSize:10}} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fill:"#475569",fontSize:10}} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(1)}k`}/>
-              <Tooltip contentStyle={{background:"#1a1728",border:"1px solid rgba(255,255,255,0.08)",borderRadius:10,fontSize:11,color:"#e2e8f0"}} cursor={{stroke:"rgba(255,255,255,0.08)"}} formatter={(v,n)=>[`$${v.toLocaleString()}`,n==="mrr"?"MRR":"Profit"]}/>
-              <Legend iconType="circle" iconSize={8} wrapperStyle={{fontSize:11,paddingTop:8,color:"#64748b"}}/>
-              <Area type="monotone" dataKey="mrr"    name="MRR"    stroke="#8b5cf6" strokeWidth={2} fill="url(#gradMrr)"    dot={{fill:"#8b5cf6",r:3,strokeWidth:0}} activeDot={{r:5,strokeWidth:0}}/>
-              <Area type="monotone" dataKey="profit" name="Profit" stroke="#10b981" strokeWidth={2} fill="url(#gradProfit)" dot={{fill:"#10b981",r:3,strokeWidth:0}} activeDot={{r:5,strokeWidth:0}}/>
-            </AreaChart>
-          </ResponsiveContainer>
+        <div className="px-4 pb-3">
+          <SvgArea
+            data={REVENUE.map(r=>({...r,month:r.m}))}
+            dataKeys={["mrr","profit"]}
+            colors={["#8b5cf6","#10b981"]}
+            labels={REVENUE.map(r=>r.m)}
+            h={220}
+          />
         </div>
       </C>
     </div>
@@ -761,18 +879,8 @@ const AdminNodes = ({ setPage, setSelNode, addToast }) => {
               {[["CPU",m.cpu,"bg-violet-500"],["RAM",m.ram,"bg-sky-500"],["Temp",m.temp,"bg-orange-500",100],["Disk",m.disk,"bg-emerald-500"]].map(([l,v,c,mx=100])=>(
                 <div key={l}><div className="flex justify-between mb-1"><span className="text-[9px] text-slate-500">{l}</span><span className="text-[9px] font-mono text-slate-300">{v}{l==="Temp"?"°":"%"}</span></div><div className="h-1 bg-white/[0.05] rounded-full overflow-hidden"><div className={`h-full ${c} rounded-full transition-all`} style={{width:`${(v/mx)*100}%`}}/></div></div>
               ))}
-              <div style={{width:"100%",height:40}}>
-                <ResponsiveContainer width="100%" height={40} minWidth={0}>
-                  <AreaChart data={m.history.map((v,i)=>({i,v}))} margin={{top:2,right:0,left:0,bottom:0}}>
-                    <defs>
-                      <linearGradient id={`ng${m.id}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%"  stopColor={m.status==="offline"?"#475569":m.status==="busy"?"#f59e0b":"#10b981"} stopOpacity={0.25}/>
-                        <stop offset="95%" stopColor={m.status==="offline"?"#475569":m.status==="busy"?"#f59e0b":"#10b981"} stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <Area type="monotone" dataKey="v" stroke={m.status==="offline"?"#475569":m.status==="busy"?"#f59e0b":"#10b981"} strokeWidth={1.5} fill={`url(#ng${m.id})`} dot={false} isAnimationActive={false}/>
-                  </AreaChart>
-                </ResponsiveContainer>
+              <div className="mt-1">
+                <Spark data={m.history} color={m.status==="offline"?"#475569":m.status==="busy"?"#f59e0b":"#10b981"} fill h={40} w={200}/>
               </div>
               <div className="flex gap-2 pt-1">
                 <button onClick={()=>{setSelNode(m);setPage("node-detail");}} className="flex-1 py-1.5 bg-white/[0.04] border border-white/[0.07] text-slate-400 text-[10px] font-bold rounded-lg hover:text-slate-200 transition-colors flex items-center justify-center gap-1.5"><Icon name="monitor" size={11}/>Details</button>
@@ -818,22 +926,8 @@ const AdminNodeDetail = ({ node, setPage, addToast }) => {
         </C>
 
         <C><CH title="CPU History — 24h"/>
-          <div style={{width:"100%",height:160}}>
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-              <AreaChart data={[...node.history,...node.history.slice(-4)].map((v,i)=>({t:`${i*2}h`,cpu:v}))} margin={{top:8,right:4,left:-28,bottom:0}}>
-                <defs>
-                  <linearGradient id="gradCpu" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor={node.status==="busy"?"#f59e0b":"#10b981"} stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor={node.status==="busy"?"#f59e0b":"#10b981"} stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
-                <XAxis dataKey="t" tick={{fill:"#475569",fontSize:9}} axisLine={false} tickLine={false} interval={3}/>
-                <YAxis tick={{fill:"#475569",fontSize:9}} axisLine={false} tickLine={false} domain={[0,100]} tickFormatter={v=>`${v}%`}/>
-                <Tooltip contentStyle={{background:"#1a1728",border:"1px solid rgba(255,255,255,0.08)",borderRadius:10,fontSize:11,color:"#e2e8f0"}} formatter={v=>[`${v}%`,"CPU"]}/>
-                <Area type="monotone" dataKey="cpu" stroke={node.status==="busy"?"#f59e0b":"#10b981"} strokeWidth={2} fill="url(#gradCpu)" dot={false}/>
-              </AreaChart>
-            </ResponsiveContainer>
+          <div className="px-4 pb-3 pt-1">
+            <Spark data={[...node.history,...node.history.slice(-4)]} color={node.status==="busy"?"#f59e0b":"#10b981"} fill h={160} w={500}/>
           </div>
         </C>
       </div>
@@ -1177,73 +1271,40 @@ const AdminAnalytics = ({ addToast }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <C><CH title="MRR Growth" sub="Last 7 months" action={<button onClick={()=>{exportCSV(REVENUE,["m","mrr","profit"],"revenue.csv");addToast("CSV exported","success");}} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.05] border border-white/[0.07] text-slate-400 text-[10px] font-bold rounded-lg hover:text-slate-200 transition-colors"><Icon name="download" size={11}/>CSV</button>}/>
-          <div style={{width:"100%",height:200}}>
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-              <BarChart data={REVENUE.map(r=>({...r,month:r.m}))} barSize={22} margin={{top:8,right:4,left:-24,bottom:0}}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
-                <XAxis dataKey="month" tick={{fill:"#475569",fontSize:10}} axisLine={false} tickLine={false}/>
-                <YAxis tick={{fill:"#475569",fontSize:10}} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(1)}k`}/>
-                <Tooltip contentStyle={{background:"#1a1728",border:"1px solid rgba(255,255,255,0.08)",borderRadius:10,fontSize:11,color:"#e2e8f0"}} cursor={{fill:"rgba(139,92,246,0.08)"}} formatter={v=>[`$${v.toLocaleString()}`,"MRR"]}/>
-                <Bar dataKey="mrr" name="MRR" radius={[4,4,0,0]}>
-                  {REVENUE.map((_,i)=>(
-                    <Cell key={i} fill={`hsl(${252+i*4},${70+i*2}%,${52+i*2}%)`}/>
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="px-4 pb-3">
+            <SvgBar data={REVENUE.map(r=>r.mrr)} labels={REVENUE.map(r=>r.m)} color="#8b5cf6" h={200}/>
           </div>
         </C>
 
         <C><CH title="Revenue vs Profit"/>
-          <div style={{width:"100%",height:200}}>
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-              <BarChart data={REVENUE.map(r=>({...r,month:r.m}))} barSize={18} margin={{top:8,right:4,left:-24,bottom:0}}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
-                <XAxis dataKey="month" tick={{fill:"#475569",fontSize:10}} axisLine={false} tickLine={false}/>
-                <YAxis tick={{fill:"#475569",fontSize:10}} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(1)}k`}/>
-                <Tooltip contentStyle={{background:"#1a1728",border:"1px solid rgba(255,255,255,0.08)",borderRadius:10,fontSize:11,color:"#e2e8f0"}} cursor={{fill:"rgba(255,255,255,0.04)"}} formatter={(v,n)=>[`$${v.toLocaleString()}`,n==="mrr"?"MRR":"Profit"]}/>
-                <Legend iconType="circle" iconSize={8} wrapperStyle={{fontSize:11,color:"#64748b"}}/>
-                <Bar dataKey="mrr"    name="MRR"    fill="#8b5cf6" radius={[4,4,0,0]} fillOpacity={0.8}/>
-                <Bar dataKey="profit" name="Profit" fill="#10b981" radius={[4,4,0,0]} fillOpacity={0.8}/>
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="px-4 pb-3">
+            <SvgGroupBar data={REVENUE.map(r=>({...r,month:r.m}))} keys={["mrr","profit"]} colors={["#8b5cf6","#10b981"]} h={200}/>
           </div>
         </C>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <C><CH title="Plan Distribution"/>
-          <div style={{width:"100%",height:200}}>
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-              <PieChart>
-                <Pie data={PLANS.map((p,i)=>({name:p.name,value:USERS.filter(u=>u.plan===p.name).length,revenue:USERS.filter(u=>u.plan===p.name).reduce((s,u)=>s+u.revenue,0)}))}
-                  cx="50%" cy="50%" innerRadius={48} outerRadius={80} paddingAngle={3} dataKey="value">
-                  {PLANS.map((_,i)=>(
-                    <Cell key={i} fill={["#64748b","#8b5cf6","#f59e0b"][i]} strokeWidth={0}/>
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{background:"#1a1728",border:"1px solid rgba(255,255,255,0.08)",borderRadius:10,fontSize:11,color:"#e2e8f0"}} formatter={(v,n,p)=>[`${v} users · $${p.payload.revenue}/mo`,p.payload.name]}/>
-                <Legend iconType="circle" iconSize={8} wrapperStyle={{fontSize:11,color:"#64748b"}}/>
-              </PieChart>
-            </ResponsiveContainer>
+          <div className="px-4 pb-3">
+            <SvgPie
+              data={PLANS.map(p=>({name:p.name,value:USERS.filter(u=>u.plan===p.name).length}))}
+              colors={["#64748b","#8b5cf6","#f59e0b"]}
+              h={200}
+            />
           </div>
         </C>
         <C><CH title="Build Success Rate"/>
-          <div style={{width:"100%",height:200}}>
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-              <PieChart>
-                <Pie data={[
-                  {name:"Success", value:BUILDS.filter(b=>b.status==="success").length},
-                  {name:"Failed",  value:BUILDS.filter(b=>b.status==="failed").length},
-                  {name:"Running", value:BUILDS.filter(b=>b.status==="running").length},
-                  {name:"Queued",  value:BUILDS.filter(b=>b.status==="queued").length},
-                ]} cx="50%" cy="50%" innerRadius={48} outerRadius={80} paddingAngle={3} dataKey="value">
-                  {["#10b981","#ef4444","#f59e0b","#64748b"].map((c,i)=>(<Cell key={i} fill={c} strokeWidth={0}/>))}
-                </Pie>
-                <Tooltip contentStyle={{background:"#1a1728",border:"1px solid rgba(255,255,255,0.08)",borderRadius:10,fontSize:11,color:"#e2e8f0"}}/>
-                <Legend iconType="circle" iconSize={8} wrapperStyle={{fontSize:11,color:"#64748b"}}/>
-              </PieChart>
-            </ResponsiveContainer>
+          <div className="px-4 pb-3">
+            <SvgPie
+              data={[
+                {name:"Success", value:BUILDS.filter(b=>b.status==="success").length},
+                {name:"Failed",  value:BUILDS.filter(b=>b.status==="failed").length},
+                {name:"Running", value:BUILDS.filter(b=>b.status==="running").length},
+                {name:"Queued",  value:BUILDS.filter(b=>b.status==="queued").length},
+              ]}
+              colors={["#10b981","#ef4444","#f59e0b","#64748b"]}
+              h={200}
+            />
           </div>
         </C>
       </div>
