@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { useState } from "react";
 import Icon from "../ui/Icon.jsx";
-import { C, CH } from "../ui/SharedUI.jsx";
+import { Badge, C, CH } from "../ui/SharedUI.jsx";
 
 const AdminBroadcast = ({ addToast }) => {
   const [title, setTitle] = useState("");

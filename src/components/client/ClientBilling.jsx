@@ -1,6 +1,6 @@
 // @ts-nocheck
 import Icon from "../ui/Icon.jsx";
-import { C, CH } from "../ui/SharedUI.jsx";
+import { Badge, C, CH } from "../ui/SharedUI.jsx";
 import { INVOICES } from "../../data/index.js";
 
 const ClientBilling = ({ addToast }) => (

@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { useState } from "react";
 import Icon from "../ui/Icon.jsx";
-import { C, CH } from "../ui/SharedUI.jsx";
+import { C, CH, exportCSV } from "../ui/SharedUI.jsx";
 import { SvgBar, SvgGroupBar, SvgArea, SvgPie } from "../charts/index.jsx";
 import { BUILDS, USERS, PLANS, REVENUE } from "../../data/index.js";
 

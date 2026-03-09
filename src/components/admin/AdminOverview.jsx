@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { useState, useEffect, useRef } from "react";
 import Icon from "../ui/Icon.jsx";
-import { Badge, C, CH } from "../ui/SharedUI.jsx";
+import { Badge, C, CH, ErrRow } from "../ui/SharedUI.jsx";
 import { Spark, SvgArea, SvgBar } from "../charts/index.jsx";
 import { BUILDS, MACS, USERS, REVENUE, ALERTS } from "../../data/index.js";
 
