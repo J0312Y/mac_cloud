@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "name": "macbuild-cloud",
+=======
+  "name": "mac-cloud",
+>>>>>>> 19b91476432250af9b736e7a7e28b4aa9d82cc00
   "private": true,
   "version": "1.0.0",
   "type": "module",
