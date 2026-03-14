@@ -5,10 +5,101 @@
 @tailwind utilities;
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body, #root { background: #090710; font-family: 'DM Sans', sans-serif; color: #e2e8f0; }
+body, #root { background: var(--bg, #090710); font-family: 'DM Sans', sans-serif; color: var(--text, #e2e8f0); }
 .font-mono { font-family: 'JetBrains Mono', monospace; }
 ::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 99px; }
 @keyframes toastIn { from { opacity:0; transform: translateX(16px); } to { opacity:1; transform: translateX(0); } }
 select option { background: #1a1728; color: #e2e8f0; }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   CSS VARIABLES — set by AppContext.jsx via document.documentElement.style
+   --ca = client accent (changes with theme)
+   --aa = admin accent  (fixed rose)
+   ══════════════════════════════════════════════════════════════════════════════ */
+:root {
+  --ca:      #06b6d4; --ca-10: rgba(6,182,212,0.1); --ca-20: rgba(6,182,212,0.2);
+  --ca-40:   rgba(6,182,212,0.4); --ca-80: rgba(6,182,212,0.8);
+  --aa:      #f43f5e; --aa-10: rgba(244,63,94,0.1);  --aa-20: rgba(244,63,94,0.2);
+  --aa-40:   rgba(244,63,94,0.4); --aa-80: rgba(244,63,94,0.8);
+  --bg:      #090710; --card: #110f1e; --text: #e2e8f0; --sub: #94a3b8;
+  --sidebar-c: #060c10; --header-c: #080e13;
+  --sidebar-a: #0d0a15; --header-a: #0e0b16;
+}
+
+/* ── Sidebar / header ───────────────────────────────────────────────────────── */
+.sidebar-client { background: var(--sidebar-c) !important; }
+.header-client  { background: var(--header-c)  !important; border-bottom-color: var(--ca-10) !important; }
+.sidebar-admin  { background: var(--sidebar-a) !important; }
+.header-admin   { background: var(--header-a)  !important; border-bottom-color: var(--aa-10) !important; }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   DYNAMIC ACCENT CLASSES
+   .c-context wraps the entire client panel  → uses --ca
+   .a-context wraps the entire admin panel   → uses --aa
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* text */
+.c-context .accent-text-dyn { color: var(--ca) !important; }
+.a-context .accent-text-dyn { color: var(--aa) !important; }
+
+/* solid button background */
+.c-context .accent-bg-dyn { background: var(--ca) !important; color: #fff !important; transition: filter .15s; }
+.a-context .accent-bg-dyn { background: var(--aa) !important; color: #fff !important; transition: filter .15s; }
+.c-context .accent-bg-dyn:hover:not(:disabled) { filter: brightness(1.12); }
+.a-context .accent-bg-dyn:hover:not(:disabled) { filter: brightness(1.1); }
+.c-context .accent-bg-dyn:disabled,
+.a-context .accent-bg-dyn:disabled { opacity: .5; }
+
+/* subtle 20% background (badges, pills, cards) */
+.c-context .accent-bg20-dyn { background: var(--ca-20) !important; }
+.a-context .accent-bg20-dyn { background: var(--aa-20) !important; }
+
+/* borders */
+.c-context .accent-bd-dyn { border-color: var(--ca-40) !important; }
+.a-context .accent-bd-dyn { border-color: var(--aa-40) !important; }
+
+/* focus ring */
+.c-context .accent-ring-dyn:focus { border-color: var(--ca-40) !important; outline: none; box-shadow: 0 0 0 2px var(--ca-10); }
+.a-context .accent-ring-dyn:focus { border-color: var(--aa-40) !important; outline: none; box-shadow: 0 0 0 2px var(--aa-10); }
+
+/* gradients */
+.c-context .accent-from-dyn { --tw-gradient-from: var(--ca) !important; }
+.a-context .accent-from-dyn { --tw-gradient-from: var(--aa) !important; }
+.c-context .accent-to-dyn   { --tw-gradient-to: var(--ca-80) !important; }
+.a-context .accent-to-dyn   { --tw-gradient-to: var(--aa-80) !important; }
+
+/* spinner */
+.c-context .accent-spin-t-dyn { border-top-color: var(--ca) !important; }
+.a-context .accent-spin-t-dyn { border-top-color: var(--aa) !important; }
+.c-context .accent-spin-dyn   { border-color: var(--ca-20) !important; }
+.a-context .accent-spin-dyn   { border-color: var(--aa-20) !important; }
+
+/* nav active state (sidebar) */
+.c-context .nav-active { background: var(--ca-10) !important; color: var(--ca) !important; border-color: var(--ca-20) !important; font-weight: 700; }
+.a-context .nav-active { background: var(--aa-10) !important; color: var(--aa) !important; border-color: var(--aa-20) !important; font-weight: 700; }
+
+/* badge */
+.c-context .accent-badge { background: var(--ca-10); color: var(--ca); border-color: var(--ca-20); }
+.a-context .accent-badge { background: var(--aa-10); color: var(--aa); border-color: var(--aa-20); }
+
+/* logo gradient */
+.c-context .accent-gradient { background: linear-gradient(135deg, var(--ca), var(--ca-80)) !important; box-shadow: 0 4px 14px var(--ca-20) !important; }
+.a-context .accent-gradient { background: linear-gradient(135deg, var(--aa), var(--aa-80)) !important; box-shadow: 0 4px 14px var(--aa-20) !important; }
+
+/* plan bar */
+.plan-bar { background: linear-gradient(90deg, var(--ca) var(--w,50%), rgba(255,255,255,.06) 0); }
+
+/* ── Light mode overrides ────────────────────────────────────────────────────── */
+[data-mode="light"] body, [data-mode="light"] #root { background: #f1f5f9 !important; color: #0f172a !important; }
+[data-mode="light"] .sidebar-client { background: #ffffff !important; border-color: rgba(0,0,0,0.07) !important; }
+[data-mode="light"] .sidebar-admin  { background: #f8fafc !important; border-color: rgba(0,0,0,0.07) !important; }
+[data-mode="light"] .text-slate-300 { color: #334155 !important; }
+[data-mode="light"] .text-slate-400 { color: #475569 !important; }
+[data-mode="light"] .text-slate-500 { color: #64748b !important; }
+[data-mode="light"] .border-white\/\[0\.07\] { border-color: rgba(0,0,0,0.09) !important; }
+[data-mode="light"] .border-white\/\[0\.05\] { border-color: rgba(0,0,0,0.07) !important; }
+[data-mode="light"] .bg-black\/30,
+[data-mode="light"] .bg-black\/20,
+[data-mode="light"] .bg-white\/\[0\.04\] { background: rgba(0,0,0,0.04) !important; }

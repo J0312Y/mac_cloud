@@ -4,9 +4,11 @@ import Icon from "../ui/Icon.jsx";
 import { Badge, C, CH, ErrRow } from "../ui/SharedUI.jsx";
 import { Spark, SvgCpuHistory } from "../charts/index.jsx";
 import { BUILDS } from "../../data/index.js";
+import { useApp } from "../../i18n/AppContext.jsx";
 
 const AdminNodeDetail = ({ node, setPage, addToast }) => {
-  if(!node) return <div className="flex-1 flex items-center justify-center"><div className="text-slate-500 text-sm">No node selected.<br/><button onClick={()=>setPage("nodes")} className="text-rose-400 mt-2 font-bold text-xs">← Back to nodes</button></div></div>;
+  const { t } = useApp();
+  if(!node) return <div className="flex-1 flex items-center justify-center"><div className="text-slate-500 text-sm">No node selected.<br/><button onClick={()=>setPage("nodes")} className="accent-text-dyn mt-2 font-bold text-xs">← Back to nodes</button></div></div>;
   const nodeBuilds = BUILDS.filter(b=>b.mac===node.id);
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -26,7 +28,7 @@ const AdminNodeDetail = ({ node, setPage, addToast }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <C><CH title="System Resources"/>
           <div className="p-4 space-y-3">
-            {[["CPU Usage",node.cpu,"bg-violet-500"],["RAM Usage",node.ram,"bg-sky-500"],["Temperature",node.temp,"bg-orange-500","°",100],["Disk Usage",node.disk,"bg-emerald-500"]].map(([l,v,c,suf="%",mx=100])=>(
+            {[["CPU Usage",node.cpu,"bg-cyan-500"],["RAM Usage",node.ram,"bg-sky-500"],["Temperature",node.temp,"bg-orange-500","°",100],["Disk Usage",node.disk,"bg-emerald-500"]].map(([l,v,c,suf="%",mx=100])=>(
               <div key={l}>
                 <div className="flex justify-between mb-1.5"><span className="text-[10px] text-slate-400">{l}</span><span className="text-[11px] font-mono font-bold text-slate-200">{v}{suf}</span></div>
                 <div className="h-2 bg-white/[0.05] rounded-full overflow-hidden"><div className={`h-full ${c} rounded-full`} style={{width:`${(v/mx)*100}%`}}/></div>
@@ -64,7 +66,7 @@ const AdminNodeDetail = ({ node, setPage, addToast }) => {
       <div className="flex gap-3">
         <button onClick={()=>addToast(`Rebooting ${node.name}…`,"warn")} className="px-4 py-2 bg-amber-900/20 border border-amber-500/20 text-amber-400 text-xs font-bold rounded-lg hover:bg-amber-900/30 transition-colors flex items-center gap-2"><Icon name="refresh" size={12}/>Reboot Node</button>
         <button onClick={()=>addToast(`Draining ${node.name} from queue…`,"info")} className="px-4 py-2 bg-white/[0.05] border border-white/[0.07] text-slate-400 text-xs font-bold rounded-lg hover:text-slate-200 transition-colors flex items-center gap-2"><Icon name="power" size={12}/>Drain from Queue</button>
-        <button onClick={()=>addToast(`Deprovisioning ${node.name}…`,"error")} className="px-4 py-2 bg-red-900/20 border border-red-500/20 text-red-400 text-xs font-bold rounded-lg hover:bg-red-900/30 transition-colors flex items-center gap-2"><Icon name="trash" size={12}/>Deprovision</button>
+        <button onClick={()=>addToast(`Deprovisioning ${node.name}…`,"error")} className="px-4 py-2 bg-red-900/20 border accent-bd-dyn accent-text-dyn text-xs font-bold rounded-lg hover:bg-red-900/30 transition-colors flex items-center gap-2"><Icon name="trash" size={12}/>Deprovision</button>
       </div>
     </div>
   );

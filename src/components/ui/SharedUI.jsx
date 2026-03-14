@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useState, useEffect, useRef } from "react";
 import Icon from "./Icon.jsx";
+import { useApp } from "../../i18n/AppContext.jsx";
 
 /* ═══ SHARED UI COMPONENTS ═══ */
 const Badge = ({ s }) => {
@@ -16,7 +17,7 @@ const Badge = ({ s }) => {
     closed:"bg-slate-500/15 text-slate-400 border-slate-500/25",paid:"bg-emerald-500/15 text-emerald-400 border-emerald-500/25",
     high:"bg-red-500/15 text-red-400 border-red-500/25",medium:"bg-amber-500/15 text-amber-400 border-amber-500/25",
     low:"bg-slate-500/15 text-slate-400 border-slate-500/25",inactive:"bg-slate-500/15 text-slate-400 border-slate-500/25",
-    Owner:"bg-violet-500/15 text-violet-400 border-violet-500/25",Developer:"bg-sky-500/15 text-sky-400 border-sky-500/25",
+    Owner:"accent-badge-bg accent-text accent-border",Developer:"bg-sky-500/15 text-sky-400 border-sky-500/25",
     Viewer:"bg-slate-500/15 text-slate-400 border-slate-500/25",
   };
   return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border capitalize ${m[s]||m.info}`}>{s}</span>;
@@ -56,7 +57,7 @@ const Toast = ({ toasts }) => (
 
 /* ═══ TOGGLE ═══ */
 const Toggle = ({ on, onChange }) => (
-  <div onClick={()=>onChange(!on)} className={`w-9 h-5 rounded-full transition-colors cursor-pointer relative flex-shrink-0 ${on?"bg-violet-600":"bg-white/10"}`}>
+  <div onClick={()=>onChange(!on)} className={`w-9 h-5 rounded-full transition-colors cursor-pointer relative flex-shrink-0 ${on?"btn-accent":"bg-white/10"}`}>
     <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform shadow ${on?"translate-x-4":"translate-x-0.5"}`}/>
   </div>
 );

@@ -37,7 +37,7 @@ const Spark = ({ data = [], color = "#8b5cf6", fill = false, h = 24, w = 80 }) =
   if (!data.length) return null;
   const mn = Math.min(...data), mx = Math.max(...data) || 1, rng = mx - mn || 1;
   const pts = data.map((v, i) => [(i / (data.length - 1)) * w, h - ((v - mn) / rng) * (h - 4) - 2]);
-  const line = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
+  const line = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join("");
   const area = `${line} L${w},${h} L0,${h} Z`;
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
@@ -281,7 +281,7 @@ const SvgArea = ({ data = [], dataKeys = [], colors = [], labels = [], h = 220 }
   const ticks = [0, 0.25, 0.5, 0.75, 1];
   const xOf = (i) => padL + (data.length < 2 ? plotW / 2 : (i / (data.length - 1)) * plotW);
   const yOf = (v) => padT + plotH - (v / mx) * plotH;
-  const mkLine = (k) => data.map((d, i) => `${i === 0 ? "M" : "L"}${xOf(i).toFixed(1)},${yOf(d[k] || 0).toFixed(1)}`).join(" ");
+  const mkLine = (k) => data.map((d, i) => `${i === 0 ? "M" : "L"}${xOf(i).toFixed(1)},${yOf(d[k] || 0).toFixed(1)}`).join("");
   const mkArea = (k) => `${mkLine(k)} L${xOf(data.length - 1).toFixed(1)},${(padT + plotH).toFixed(1)} L${padL},${(padT + plotH).toFixed(1)} Z`;
 
   const onMove = useCallback((e) => {

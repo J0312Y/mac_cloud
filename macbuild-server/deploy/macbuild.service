@@ -1,0 +1,34 @@
+[Unit]
+Description=Mac Build Cloud API Server
+Documentation=https://github.com/yourorg/macbuild-server
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=macbuild
+Group=macbuild
+WorkingDirectory=/opt/macbuild-server
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=macbuild
+
+# Environment
+EnvironmentFile=/opt/macbuild-server/.env
+Environment=NODE_ENV=production
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/macbuild-server/storage
+
+# Resource limits
+LimitNOFILE=65535
+MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target

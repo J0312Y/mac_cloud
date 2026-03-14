@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useState, useEffect, useRef } from "react";
 import Icon from "../ui/Icon.jsx";
+import { useApp } from "../../i18n/AppContext.jsx";
 
 /* ═══ CLIENT CHATBOT ═══ */
 const CHAT_SUGGESTIONS = [
@@ -55,6 +56,7 @@ function renderMd(text) {
 }
 
 const ClientChatbot = ({ setPage }) => {
+  const { t } = useApp();
   const [open, setOpen]   = useState(false);
   const [msgs, setMsgs]   = useState([
     { id:1, from:"bot", text:"👋 Hi! I'm the Mac Build Cloud assistant. Ask me anything about builds, certificates, billing, or your account." }
@@ -86,7 +88,7 @@ const ClientChatbot = ({ setPage }) => {
       {/* Floating button */}
       <button
         onClick={() => setOpen(o => !o)}
-        className="fixed bottom-5 right-5 z-[1000] w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-xl shadow-violet-500/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+        className="fixed bottom-5 right-5 z-[1000] w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--accent)] to-[var(--accent-80)] shadow-xl accent-glow flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
         title="AI Assistant"
       >
         {open
@@ -94,7 +96,7 @@ const ClientChatbot = ({ setPage }) => {
           : <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         }
         {!open && msgs.filter(m=>m.from==="bot").length > 1 && (
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-violet-400 rounded-full text-[8px] flex items-center justify-center text-white font-black animate-pulse">
+          <span className="absolute -top-1 -right-1 w-4 h-4 bg-cyan-500 rounded-full text-[8px] flex items-center justify-center text-white font-black animate-pulse">
             {msgs.filter(m=>m.from==="bot").length}
           </span>
         )}
@@ -105,13 +107,13 @@ const ClientChatbot = ({ setPage }) => {
         <div className="fixed bottom-20 right-5 z-[999] w-80 flex flex-col bg-[#13111f] border border-white/[0.08] rounded-2xl shadow-2xl shadow-black/50 overflow-hidden"
           style={{height:420}}>
           {/* Header */}
-          <div className="flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-violet-600/20 to-indigo-600/10 border-b border-white/[0.06]">
-            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+          <div className="flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-[var(--accent)]/20 to-[var(--accent-80)]/10 border-b border-white/[0.06]">
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[var(--accent)] to-[var(--accent-80)] flex items-center justify-center flex-shrink-0">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </div>
             <div>
               <p className="text-[11px] font-black text-white">Build Assistant</p>
-              <p className="text-[9px] text-violet-400 flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"/>Online</p>
+              <p className="text-[9px] accent-text flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"/>Online</p>
             </div>
             <button onClick={() => setOpen(false)} className="ml-auto text-slate-600 hover:text-slate-300 transition-colors"><Icon name="x" size={13}/></button>
           </div>
@@ -121,15 +123,15 @@ const ClientChatbot = ({ setPage }) => {
             {msgs.map(msg => (
               <div key={msg.id} className={`flex ${msg.from==="user"?"justify-end":"justify-start"}`}>
                 {msg.from==="bot" && (
-                  <div className="w-5 h-5 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center flex-shrink-0 mr-1.5 mt-0.5">
+                  <div className="w-5 h-5 rounded-lg bg-gradient-to-br from-[var(--accent)] to-[var(--accent-80)] flex items-center justify-center flex-shrink-0 mr-1.5 mt-0.5">
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                   </div>
                 )}
-                <div className={`max-w-[78%] rounded-xl px-3 py-2 text-[11px] leading-relaxed ${msg.from==="user" ? "bg-violet-600 text-white rounded-br-sm" : "bg-[#1e1b2e] border border-white/[0.06] text-slate-300 rounded-bl-sm"}`}>
+                <div className={`max-w-[78%] rounded-xl px-3 py-2 text-[11px] leading-relaxed ${msg.from==="user" ? "btn-accent text-white rounded-br-sm" : "bg-[#1e1b2e] border border-white/[0.06] text-slate-300 rounded-bl-sm"}`}>
                   <span dangerouslySetInnerHTML={{ __html: renderMd(msg.text) }}/>
                   {msg.action && (
                     <button onClick={() => { msg.action(setPage); setOpen(false); }}
-                      className="mt-1.5 flex items-center gap-1 text-[10px] text-violet-400 hover:text-violet-300 font-bold transition-colors">
+                      className="mt-1.5 flex items-center gap-1 text-[10px] accent-text hover:accent-text font-bold transition-colors">
                       <Icon name="arrowR" size={9}/>Go there
                     </button>
                   )}
@@ -138,11 +140,11 @@ const ClientChatbot = ({ setPage }) => {
             ))}
             {typing && (
               <div className="flex justify-start">
-                <div className="w-5 h-5 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center mr-1.5 mt-0.5">
+                <div className="w-5 h-5 rounded-lg bg-gradient-to-br from-[var(--accent)] to-[var(--accent-80)] flex items-center justify-center mr-1.5 mt-0.5">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 </div>
                 <div className="bg-[#1e1b2e] border border-white/[0.06] rounded-xl rounded-bl-sm px-3 py-2 flex gap-1 items-center">
-                  {[0,1,2].map(i=><span key={i} className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-bounce" style={{animationDelay:`${i*0.15}s`}}/>)}
+                  {[0,1,2].map(i=><span key={i} className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-bounce" style={{animationDelay:`${i*0.15}s`}}/>)}
                 </div>
               </div>
             )}
@@ -153,7 +155,7 @@ const ClientChatbot = ({ setPage }) => {
           <div className="px-3 pb-1 flex gap-1.5 overflow-x-auto scrollbar-none">
             {CHAT_SUGGESTIONS.slice(0,3).map(s=>(
               <button key={s} onClick={()=>send(s)}
-                className="flex-shrink-0 text-[9px] bg-white/[0.04] border border-white/[0.06] text-slate-500 hover:text-violet-400 hover:border-violet-500/30 px-2 py-1 rounded-full transition-colors whitespace-nowrap">
+                className="flex-shrink-0 text-[9px] bg-white/[0.04] border border-white/[0.06] text-slate-500 hover:accent-text hover:accent-border px-2 py-1 rounded-full transition-colors whitespace-nowrap">
                 {s}
               </button>
             ))}
@@ -167,11 +169,11 @@ const ClientChatbot = ({ setPage }) => {
               onChange={e=>setInput(e.target.value)}
               onKeyDown={e=>e.key==="Enter"&&send()}
               placeholder="Ask anything…"
-              className="flex-1 bg-black/30 border border-white/[0.07] rounded-xl px-3 py-2 text-[11px] text-slate-300 outline-none focus:border-violet-500/40 transition-colors placeholder:text-slate-700"
+              className="flex-1 bg-black/30 border border-white/[0.07] rounded-xl px-3 py-2 text-[11px] text-slate-300 outline-none focus:accent-border transition-colors placeholder:text-slate-700"
             />
             <button onClick={()=>send()}
               disabled={!input.trim()}
-              className="w-8 h-8 flex items-center justify-center rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0">
+              className="w-8 h-8 flex items-center justify-center rounded-xl btn-accent disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
           </div>
